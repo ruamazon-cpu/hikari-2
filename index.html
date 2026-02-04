@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIKARI's profile</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Italiana&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #222222;
+            --text-body: #444444;
+            --accent-pink: #ff69b4;
+            --accent-blue: #00ced1;
+            --accent-gold: #ffd700;
+            --bg-color: #ffffff;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Zen Kaku Gothic New', sans-serif;
+            color: var(--primary-color);
+            overflow-x: hidden;
+            line-height: 1.8;
+        }
+
+        /* Background Canvas */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Content Layout */
+        .page-container {
+            width: 100%;
+        }
+
+        section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 5rem 1.5rem;
+            position: relative;
+        }
+
+        .section-title {
+            font-family: 'Italiana', serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            margin-bottom: 3rem;
+            background: linear-gradient(45deg, var(--accent-pink), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 2rem;
+            z-index: 100;
+            display: flex;
+            justify-content: flex-end;
+            gap: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: var(--primary-color);
+            font-family: 'Italiana', serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        .nav-item:hover { color: var(--accent-pink); }
+
+        /* Hero Section */
+        .hero-section {
+            text-align: center;
+        }
+
+        .hero-logo {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 1.5rem;
+            color: var(--accent-pink);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .hero-title {
+            font-family: 'Italiana', serif;
+            font-size: clamp(3.5rem, 10vw, 8rem);
+            line-height: 1;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-tagline {
+            font-size: 1.2rem;
+            max-width: 600px;
+            font-weight: 500;
+            color: var(--text-body);
+        }
+
+        /* Cards */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 0 10px 40px rgba(255, 105, 180, 0.1);
+            display: flex;
+            gap: 3rem;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .glass-card {
+                flex-direction: column;
+                padding: 2rem;
+                text-align: center;
+            }
+        }
+
+        .profile-info h3 {
+            font-family: 'Italiana', serif;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-role {
+            display: block;
+            color: var(--accent-pink);
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Favorites Grid */
+        .fav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .fav-item {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: transform 0.3s ease;
+        }
+        .fav-item:hover {
+            transform: translateY(-10px);
+        }
+
+        .fav-number {
+            font-family: 'Italiana', serif;
+            font-size: 1rem;
+            color: var(--accent-blue);
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        .fav-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .fav-desc {
+            font-size: 1rem;
+            color: var(--text-body);
+        }
+
+        /* Contact */
+        .contact-box {
+            background: var(--glass-bg);
+            padding: 3rem;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .contact-btn {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 1rem 3rem;
+            background: var(--accent-pink);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: opacity 0.3s;
+        }
+        .contact-btn:hover { opacity: 0.8; }
+
+        footer {
+            padding: 2rem;
+            text-align: center;
+            font-family: 'Italiana', serif;
+            color: #888;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div class="page-container">
+        <nav>
+            <a href="#about" class="nav-item">About</a>
+            <a href="#favorites" class="nav-item">Favorites</a>
+            <a href="#contact" class="nav-item">Contact</a>
+        </nav>
+
+        <section class="hero-section">
+            <span class="hero-logo">HIKARI's profile</span>
+            <h1 class="hero-title">HIKARI</h1>
+            <p class="hero-tagline">ハッピーもスイーツも🎵<br>超大盛ぐらいがちょうどいい！✨</p>
+        </section>
+
+        <section id="about">
+            <h2 class="section-title">About Me</h2>
+            <div class="glass-card">
+                <div class="profile-info">
+                    <h3>HIKARI</h3>
+                    <span class="profile-role">Happy & Foodie Enthusiast</span>
+                    <p>美味しいものを食べている時と、指先がキラキラしている時が一番幸せ！人生楽しんだもん勝ちがモットーです。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="favorites">
+            <h2 class="section-title">My Favorites</h2>
+            <div class="fav-grid">
+                <div class="fav-item">
+                    <span class="fav-number">01</span>
+                    <h3 class="fav-title">超デカ盛りグルメ🍚</h3>
+                    <p class="fav-desc">美味しいものは、お腹いっぱい食べるのが正義！お台場の食べ歩きも、全制覇が基本です。</p>
+                </div>
+                <div class="fav-item">
+                    <span class="fav-number">02</span>
+                    <h3 class="fav-title">超キラキラネイル💅</h3>
+                    <p class="fav-desc">指先が可愛いと、スマホをいじってるだけでもテンションが爆上がりするんだよね。</p>
+                </div>
+                <div class="fav-item">
+                    <span class="fav-number">03</span>
+                    <h3 class="fav-title">横浜ベイブリッジの夜景🌉</h3>
+                    <p class="fav-desc">どんなに悩みごとがあっても、このキラキラした景色を見ると、明日も自分らしくいこう！って思える大切な場所です。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact">
+            <h2 class="section-title">Contact</h2>
+            <div class="contact-box">
+                <p>HIKARIへのメッセージはこちらからどうぞ！</p>
+                <a href="mailto:example@gmail.com" class="contact-btn">Say Hello</a>
+            </div>
+            <footer>© 2024 HIKARI's profile</footer>
+        </section>
+    </div>
+
+    <script>
+        // --- Three.js Background Animation ---
+        let renderer, scene, camera, material;
+        let mouse = new THREE.Vector2(0.5, 0.5);
+
+        function initBackground() {
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene();
+            camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            const vertexShader = `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = vec4(position, 1.0);
+                }
+            `;
+
+            const fragmentShader = `
+                uniform float uTime;
+                uniform vec2 uMouse;
+                uniform vec2 uResolution;
+                varying vec2 vUv;
+
+                void main() {
+                    vec2 p = (gl_FragCoord.xy * 2.0 - uResolution) / min(uResolution.x, uResolution.y);
+                    vec2 m = (uMouse * 2.0 - 1.0);
+                    
+                    float d = length(p - m) * 0.5;
+                    float c = 0.0;
+                    
+                    for(float i=1.0; i<4.0; i++) {
+                        p.x += 0.3 / i * sin(i * 3.0 * p.y + uTime * 0.5);
+                        p.y += 0.3 / i * cos(i * 3.0 * p.x + uTime * 0.5);
+                        c += abs(0.01 / length(p - m));
+                    }
+                    
+                    vec3 col1 = vec3(1.0, 0.4, 0.7); // Pink
+                    vec3 col2 = vec3(0.4, 0.8, 1.0); // Blue
+                    vec3 finalCol = mix(col1, col2, vUv.x + sin(uTime * 0.2));
+                    
+                    gl_FragColor = vec4(finalCol + c, 1.0) * 0.15 + vec4(1.0, 1.0, 1.0, 1.0) * 0.85;
+                }
+            `;
+
+            const geometry = new THREE.PlaneGeometry(2, 2);
+            material = new THREE.ShaderMaterial({
+                uniforms: {
+                    uTime: { value: 0 },
+                    uMouse: { value: mouse },
+                    uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+                },
+                vertexShader,
+                fragmentShader
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            material.uniforms.uTime.value += 0.02;
+            material.uniforms.uMouse.value.lerp(mouse, 0.1);
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX / window.innerWidth;
+            mouse.y = 1.0 - (e.clientY / window.innerHeight);
+        });
+
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            material.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+        });
+
+        window.onload = initBackground;
+
+        // Smooth Scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
